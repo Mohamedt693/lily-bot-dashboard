@@ -1,0 +1,13 @@
+@import "tailwindcss";
+
+
+.Toastify__toast {
+    background-color: #34d399 !important;
+    color: white !important;
+    border-radius: 8px !important;
+}
+
+
+.Toastify__progress-bar {
+    background-color: #ffffff !important;
+}
