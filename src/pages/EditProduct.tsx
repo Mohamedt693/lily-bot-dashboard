@@ -1,8 +1,9 @@
 import { Formik, Form, Field, ErrorMessage, FieldArray, type FormikHelpers } from 'formik';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Save, Plus, Trash2, Sparkles, Layers, Link2, Loader2 } from 'lucide-react';
+import { ArrowLeft, Save, Plus, Trash2, Sparkles, Layers, Loader2, RefreshCw } from 'lucide-react';
 import { validationSchema, type ProductFormValues, APPROVED_CATEGORIES } from '../schemas/product.schema';
 import { useProduct } from '../contexts/ProductContext';
+import PriceManager from '../components/PriceManager'; 
 
 export default function EditProduct() {
   const { id } = useParams<{ id: string }>();
@@ -14,7 +15,6 @@ export default function EditProduct() {
   const initialValues: ProductFormValues | null = productToEdit ? {
     name: productToEdit.name,
     description: productToEdit.description,
-    link: productToEdit.link,
     ingredients: productToEdit.ingredients,
     category: productToEdit.category,
     budget: productToEdit.budget,
@@ -77,105 +77,109 @@ export default function EditProduct() {
         enableReinitialize={true}
       >
         {({ values }) => (
-          <Form id="edit-product-form" className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-            <div className="lg:col-span-2 space-y-6">
-              <div className="bg-white p-6 rounded-xl border border-zinc-200 shadow-xs space-y-5">
-                <div className="flex items-center gap-2 border-b border-zinc-100 pb-3 text-zinc-800 font-bold text-sm">
-                  <Sparkles size={16} className="text-emerald-600" />
-                  Core Specifications
+          <Form id="edit-product-form" className="space-y-6">
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+              <div className="lg:col-span-2 space-y-6">
+                <div className="bg-white p-6 rounded-xl border border-zinc-200 shadow-xs space-y-5">
+                  <div className="flex items-center gap-2 border-b border-zinc-100 pb-3 text-zinc-800 font-bold text-sm">
+                    <Sparkles size={16} className="text-emerald-600" />
+                    Core Specifications
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Product Name</label>
+                    <Field name="name" type="text" className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-4 py-2.5 text-sm focus:outline-hidden focus:border-emerald-500 focus:bg-white transition-all" />
+                    <ErrorMessage name="name" component="span" className="text-xs font-semibold text-rose-500 mt-0.5" />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Description (AI Context)</label>
+                    <Field as="textarea" rows={5} name="description" className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-4 py-2.5 text-sm focus:outline-hidden focus:border-emerald-500 focus:bg-white transition-all resize-none leading-relaxed" />
+                    <ErrorMessage name="description" component="span" className="text-xs font-semibold text-rose-500 mt-0.5" />
+                  </div>
                 </div>
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Product Name</label>
-                  <Field name="name" type="text" className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-4 py-2.5 text-sm focus:outline-hidden focus:border-emerald-500 focus:bg-white transition-all" />
-                  <ErrorMessage name="name" component="span" className="text-xs font-semibold text-rose-500 mt-0.5" />
-                </div>
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Description (AI Context)</label>
-                  <Field as="textarea" rows={5} name="description" className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-4 py-2.5 text-sm focus:outline-hidden focus:border-emerald-500 focus:bg-white transition-all resize-none leading-relaxed" />
-                  <ErrorMessage name="description" component="span" className="text-xs font-semibold text-rose-500 mt-0.5" />
-                </div>
-              </div>
-              <div className="bg-white p-6 rounded-xl border border-zinc-200 shadow-xs space-y-4">
-                <div className="flex items-center gap-2 border-b border-zinc-100 pb-3 text-zinc-800 font-bold text-sm">
-                  <Link2 size={16} className="text-emerald-600" />
-                  Marketplace Integrations
-                </div>
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Affiliate / Purchase URL (link)</label>
-                  <Field name="link" type="text" className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-4 py-2.5 focus:outline-hidden focus:border-emerald-500 focus:bg-white transition-all font-mono text-xs" />
-                  <ErrorMessage name="link" component="span" className="text-xs font-semibold text-rose-500 mt-0.5" />
-                </div>
-              </div>
-              <div className="bg-white p-6 rounded-xl border border-zinc-200 shadow-xs space-y-4">
-                <label className="text-sm font-bold text-zinc-800">Chemical Ingredients Structure</label>
-                <FieldArray name="ingredients">
-                  {({ push, remove }) => (
-                    <div className="space-y-2.5">
-                      {values.ingredients && values.ingredients.map((_, index) => (
-                        <div key={index} className="flex flex-col gap-1">
-                          <div className="flex gap-2 items-center">
-                            <Field name={`ingredients.${index}`} className="flex-1 bg-zinc-50 border border-zinc-200 rounded-lg px-4 py-2 text-sm" />
-                            {values.ingredients.length > 1 && (
-                              <button type="button" onClick={() => remove(index)} className="p-2 text-rose-500 hover:bg-rose-50 rounded-lg cursor-pointer"><Trash2 size={15} /></button>
-                            )}
+
+                <div className="bg-white p-6 rounded-xl border border-zinc-200 shadow-xs space-y-4">
+                  <label className="text-sm font-bold text-zinc-800">Chemical Ingredients Structure</label>
+                  <FieldArray name="ingredients">
+                    {({ push, remove }) => (
+                      <div className="space-y-2.5">
+                        {values.ingredients && values.ingredients.map((_, index) => (
+                          <div key={index} className="flex flex-col gap-1">
+                            <div className="flex gap-2 items-center">
+                              <Field name={`ingredients.${index}`} className="flex-1 bg-zinc-50 border border-zinc-200 rounded-lg px-4 py-2 text-sm" />
+                              {values.ingredients.length > 1 && (
+                                <button type="button" onClick={() => remove(index)} className="p-2 text-rose-500 hover:bg-rose-50 rounded-lg cursor-pointer"><Trash2 size={15} /></button>
+                              )}
+                            </div>
+                            <ErrorMessage name={`ingredients.${index}`} component="span" className="text-xs font-semibold text-rose-500" />
                           </div>
-                          <ErrorMessage name={`ingredients.${index}`} component="span" className="text-xs font-semibold text-rose-500" />
-                        </div>
+                        ))}
+                        <button type="button" onClick={() => push('')} className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 hover:text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg cursor-pointer w-fit"><Plus size={14} /> Add Ingredient</button>
+                      </div>
+                    )}
+                  </FieldArray>
+                </div>
+              </div>
+              
+              <div className="space-y-6">
+                <div className="bg-white p-6 rounded-xl border border-zinc-200 shadow-xs space-y-4">
+                  <div className="flex items-center gap-2 border-b border-zinc-100 pb-3 text-zinc-800 font-bold text-sm">
+                    <Layers size={16} className="text-emerald-600" />
+                    Classification & Taxonomy
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Category</label>
+                    <Field as="select" name="category" className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2 text-sm focus:outline-hidden focus:border-emerald-500 focus:bg-white transition-all cursor-pointer">
+                      {APPROVED_CATEGORIES.map((cat) => (
+                        <option key={cat} value={cat}>{cat}</option>
                       ))}
-                      <button type="button" onClick={() => push('')} className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 hover:text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg cursor-pointer w-fit"><Plus size={14} /> Add Ingredient</button>
-                    </div>
-                  )}
-                </FieldArray>
+                    </Field>
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Budget Tier</label>
+                    <Field as="select" name="budget" className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2 text-sm focus:outline-hidden focus:border-emerald-500 focus:bg-white transition-all cursor-pointer">
+                      <option value="economy">Economy</option>
+                      <option value="medium">Medium</option>
+                      <option value="luxury">Luxury</option>
+                    </Field>
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Skin Type Target</label>
+                    <Field name="skinType" type="text" className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2 text-sm focus:outline-hidden focus:border-emerald-500 focus:bg-white transition-all" />
+                    <ErrorMessage name="skinType" component="span" className="text-xs font-semibold text-rose-500 mt-0.5" />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Product Origin</label>
+                    <Field name="origin" type="text" className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2 text-sm focus:outline-hidden focus:border-emerald-500 focus:bg-white transition-all" />
+                    <ErrorMessage name="origin" component="span" className="text-xs font-semibold text-rose-500 mt-0.5" />
+                  </div>
+                </div>
+                <div className="bg-white p-6 rounded-xl border border-zinc-200 shadow-xs space-y-4">
+                  <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider block">Active Coupons</label>
+                  <FieldArray name="coupons">
+                    {({ push, remove }) => (
+                      <div className="space-y-2">
+                        {values.coupons && values.coupons.map((_, index) => (
+                          <div key={index} className="flex gap-2 items-center">
+                            <Field name={`coupons.${index}`} className="flex-1 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2 text-sm" />
+                            <button type="button" onClick={() => remove(index)} className="p-2 text-rose-500 hover:bg-rose-50 rounded-lg cursor-pointer"><Trash2 size={15} /></button>
+                          </div>
+                        ))}
+                        <button type="button" onClick={() => push('')} className="flex items-center gap-1 text-xs font-bold text-emerald-600 hover:text-emerald-700 transition-colors cursor-pointer"><Plus size={12} /> Add Coupon</button>
+                      </div>
+                    )}
+                  </FieldArray>
+                </div>
               </div>
             </div>
-            <div className="space-y-6">
+
+            <div className="pt-8 border-t border-zinc-200">
               <div className="bg-white p-6 rounded-xl border border-zinc-200 shadow-xs space-y-4">
                 <div className="flex items-center gap-2 border-b border-zinc-100 pb-3 text-zinc-800 font-bold text-sm">
-                  <Layers size={16} className="text-emerald-600" />
-                  Classification & Taxonomy
+                  <RefreshCw size={16} className="text-emerald-600" />
+                  Marketplace Pricing Sync
                 </div>
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Category</label>
-                  <Field as="select" name="category" className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2 text-sm focus:outline-hidden focus:border-emerald-500 focus:bg-white transition-all cursor-pointer">
-                    {APPROVED_CATEGORIES.map((cat) => (
-                      <option key={cat} value={cat}>{cat}</option>
-                    ))}
-                  </Field>
-                </div>
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Budget Tier</label>
-                  <Field as="select" name="budget" className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2 text-sm focus:outline-hidden focus:border-emerald-500 focus:bg-white transition-all cursor-pointer">
-                    <option value="economy">Economy</option>
-                    <option value="medium">Medium</option>
-                    <option value="luxury">Luxury</option>
-                  </Field>
-                </div>
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Skin Type Target</label>
-                  <Field name="skinType" type="text" className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2 text-sm focus:outline-hidden focus:border-emerald-500 focus:bg-white transition-all" />
-                  <ErrorMessage name="skinType" component="span" className="text-xs font-semibold text-rose-500 mt-0.5" />
-                </div>
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Product Origin</label>
-                  <Field name="origin" type="text" className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2 text-sm focus:outline-hidden focus:border-emerald-500 focus:bg-white transition-all" />
-                  <ErrorMessage name="origin" component="span" className="text-xs font-semibold text-rose-500 mt-0.5" />
-                </div>
-              </div>
-              <div className="bg-white p-6 rounded-xl border border-zinc-200 shadow-xs space-y-4">
-                <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider block">Active Coupons</label>
-                <FieldArray name="coupons">
-                  {({ push, remove }) => (
-                    <div className="space-y-2">
-                      {values.coupons && values.coupons.map((_, index) => (
-                        <div key={index} className="flex gap-2 items-center">
-                          <Field name={`coupons.${index}`} className="flex-1 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2 text-sm" />
-                          <button type="button" onClick={() => remove(index)} className="p-2 text-rose-500 hover:bg-rose-50 rounded-lg cursor-pointer"><Trash2 size={15} /></button>
-                        </div>
-                      ))}
-                      <button type="button" onClick={() => push('')} className="flex items-center gap-1 text-xs font-bold text-emerald-600 hover:text-emerald-700 transition-colors cursor-pointer"><Plus size={12} /> Add Coupon</button>
-                    </div>
-                  )}
-                </FieldArray>
+                <PriceManager productId={id!} />
               </div>
             </div>
           </Form>

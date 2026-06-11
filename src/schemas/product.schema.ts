@@ -18,7 +18,6 @@ export const validationSchema = Yup.object().shape({
     skinType: Yup.string()
         .oneOf(['Oily', 'Dry', 'Combination', 'Sensitive'], 'Please select a valid skin type')
         .required('Skin type is required'),
-    link: Yup.string().url('Must be a valid URL'),
     origin: Yup.string().required('Product origin is required (e.g., Local, Egyptian)'),
     coupons: Yup.array().of(Yup.string().trim().required('Coupon cannot be empty')).required(),
     images: Yup.array().of(Yup.string().url('Must be a valid image URL').required('Image URL is required')).required(),

@@ -5,7 +5,9 @@ import Overview from "../pages/Overview";
 import Products from "../pages/Products";
 import AddProduct from "../pages/AddProduct";
 import EditProduct from "../pages/EditProduct";
-import ProtectedRoute from "../components/ProtectedRoute"; 
+import ManageProductPrices from "../pages/ManageProductPrices";
+// protect middleware
+import ProtectedRoute from "../components/ProtectedRoute";
 
 export const router = createBrowserRouter([
   {
@@ -30,6 +32,10 @@ export const router = createBrowserRouter([
           {
             path: "products/add",
             element: <AddProduct />,
+          },
+          {
+            path: "products/:id/prices",
+            element: <ManageProductPrices />,
           },
           {
             path: "products/edit/:id",
