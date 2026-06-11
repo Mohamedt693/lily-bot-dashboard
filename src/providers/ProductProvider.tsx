@@ -18,6 +18,8 @@ export function ProductProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(false);
   const API_URL = import.meta.env.VITE_BACKEND_URL;
 
+  console.log(API_URL)
+
   const getHeaders = useCallback(
     () => ({
       "Content-Type": "application/json",
