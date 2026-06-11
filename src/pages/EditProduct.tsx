@@ -1,28 +1,31 @@
+import { useState, useEffect } from 'react';
 import { Formik, Form, Field, ErrorMessage, FieldArray, type FormikHelpers } from 'formik';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Save, Plus, Trash2, Sparkles, Layers, Loader2, RefreshCw } from 'lucide-react';
 import { validationSchema, type ProductFormValues, APPROVED_CATEGORIES } from '../schemas/product.schema';
 import { useProduct } from '../contexts/ProductContext';
+import type { Product } from '../types/product.type';
 import PriceManager from '../components/PriceManager'; 
+
 
 export default function EditProduct() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { products, loading, updateProduct } = useProduct();
+  const { loading: contextLoading, updateProduct, getProductById } = useProduct();
+  
+  const [product, setProduct] = useState<Product | null>(null);
+  const [localLoading, setLocalLoading] = useState(true);
 
-  const productToEdit = products.find((p) => p._id === id);
-
-  const initialValues: ProductFormValues | null = productToEdit ? {
-    name: productToEdit.name,
-    description: productToEdit.description,
-    ingredients: productToEdit.ingredients,
-    category: productToEdit.category,
-    budget: productToEdit.budget,
-    skinType: productToEdit.skinType,
-    origin: productToEdit.origin,
-    coupons: productToEdit.coupons,
-    images: productToEdit.images,
-  } : null;
+  useEffect(() => {
+    const loadProduct = async () => {
+      if (!id) return;
+      setLocalLoading(true);
+      const data = await getProductById(id);
+      setProduct(data);
+      setLocalLoading(false);
+    };
+    loadProduct();
+  }, [id, getProductById]);
 
   const handleSubmit = async (
     values: ProductFormValues, 
@@ -34,11 +37,20 @@ export default function EditProduct() {
     }
   };
 
-  if (loading || !productToEdit) {
+  if (contextLoading || localLoading) {
     return (
       <div className="h-96 flex flex-col items-center justify-center gap-3 text-zinc-500">
         <Loader2 className="animate-spin text-emerald-600" size={32} />
         <p className="text-sm font-medium">Extracting product architecture from database...</p>
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="h-96 flex flex-col items-center justify-center gap-3 text-zinc-500">
+        <p className="text-sm font-bold">Product not found. Please check the ID or return to dashboard.</p>
+        <button onClick={() => navigate('/dashboard/products')} className="text-emerald-600 underline text-xs">Return to Dashboard</button>
       </div>
     );
   }
@@ -71,14 +83,23 @@ export default function EditProduct() {
       </div>
 
       <Formik
-        initialValues={initialValues!}
+        initialValues={{
+          name: product.name,
+          description: product.description,
+          ingredients: product.ingredients,
+          category: product.category,
+          budget: product.budget,
+          skinType: product.skinType,
+          origin: product.origin,
+          coupons: product.coupons,
+          images: product.images,
+        }}
         validationSchema={validationSchema}
         onSubmit={handleSubmit}
         enableReinitialize={true}
       >
         {({ values }) => (
           <Form id="edit-product-form" className="space-y-6">
-
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
               <div className="lg:col-span-2 space-y-6">
                 <div className="bg-white p-6 rounded-xl border border-zinc-200 shadow-xs space-y-5">
@@ -153,22 +174,6 @@ export default function EditProduct() {
                     <Field name="origin" type="text" className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2 text-sm focus:outline-hidden focus:border-emerald-500 focus:bg-white transition-all" />
                     <ErrorMessage name="origin" component="span" className="text-xs font-semibold text-rose-500 mt-0.5" />
                   </div>
-                </div>
-                <div className="bg-white p-6 rounded-xl border border-zinc-200 shadow-xs space-y-4">
-                  <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider block">Active Coupons</label>
-                  <FieldArray name="coupons">
-                    {({ push, remove }) => (
-                      <div className="space-y-2">
-                        {values.coupons && values.coupons.map((_, index) => (
-                          <div key={index} className="flex gap-2 items-center">
-                            <Field name={`coupons.${index}`} className="flex-1 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2 text-sm" />
-                            <button type="button" onClick={() => remove(index)} className="p-2 text-rose-500 hover:bg-rose-50 rounded-lg cursor-pointer"><Trash2 size={15} /></button>
-                          </div>
-                        ))}
-                        <button type="button" onClick={() => push('')} className="flex items-center gap-1 text-xs font-bold text-emerald-600 hover:text-emerald-700 transition-colors cursor-pointer"><Plus size={12} /> Add Coupon</button>
-                      </div>
-                    )}
-                  </FieldArray>
                 </div>
               </div>
             </div>

@@ -27,6 +27,7 @@ export interface ProductContextType {
     loading: boolean;
     pagination: Pagination; 
     loadProducts: (page?: number, limit?: number) => Promise<void>; 
+    getProductById: (productId: string) => Promise<Product | null>;
     addProduct: (productData: ProductFormValues) => Promise<Product>;
     updateProduct: (id: string, product: Partial<ProductFormValues>) => Promise<void>;
     deleteProduct: (id: string) => Promise<void>;

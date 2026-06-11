@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Plus, Trash2, RefreshCw, ExternalLink, TrendingDown, Store } from 'lucide-react';
 import { useProduct } from '../contexts/ProductContext';
 import type { LinkOffer, PriceFormState } from '../types/linkOffer.type';
@@ -46,8 +46,7 @@ export default function PriceManager({ productId }: PriceManagerProps) {
     };
   }, [productId, fetchOffers]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleFormSubmit = async () => {
     if (!formData.url || !formData.priceSelector || !productId) return;
 
     setLoading(true);
@@ -118,7 +117,7 @@ export default function PriceManager({ productId }: PriceManagerProps) {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         
-        <form onSubmit={handleSubmit} className="bg-zinc-50 p-4 rounded-xl border border-zinc-200 space-y-4">
+        <div className="bg-zinc-50 p-4 rounded-xl border border-zinc-200 space-y-4">
           <div className="text-xs font-bold text-zinc-700 uppercase tracking-wider">Integrate New Store</div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -177,14 +176,15 @@ export default function PriceManager({ productId }: PriceManagerProps) {
           </div>
 
           <button
-            type="submit"
+            type="button"
+            onClick={handleFormSubmit}
             disabled={loading}
             className="w-full flex items-center justify-center gap-1.5 bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-bold py-2 rounded-lg transition-colors cursor-pointer disabled:opacity-50 shadow-xs"
           >
             <Plus size={14} />
             <span>{loading ? 'Linking...' : 'Integrate Marketplace'}</span>
           </button>
-        </form>
+        </div>
 
         <div className="lg:col-span-2 border border-zinc-200 rounded-xl overflow-hidden bg-white">
           {offers.length === 0 ? (
@@ -205,7 +205,7 @@ export default function PriceManager({ productId }: PriceManagerProps) {
                 </thead>
                 <tbody className="divide-y divide-zinc-100 text-xs text-zinc-700">
                   {offers.map((offer) => {
-                    const hasPriceDrop = offer.price < offer.oldPrice;
+                    const hasPriceDrop = offer.currentPrice < offer.oldPrice;
                     return (
                       <tr key={offer._id} className="hover:bg-zinc-50/50 transition-colors">
                         <td className="py-3 px-4 font-semibold text-zinc-900 flex items-center gap-2">
@@ -214,7 +214,7 @@ export default function PriceManager({ productId }: PriceManagerProps) {
                         </td>
                         <td className="py-3 px-4 font-mono font-bold text-zinc-900">
                           <span className="flex items-center gap-1">
-                            {offer.price ? `${offer.price} ${offer.currency}` : 'N/A'}
+                            {offer.currentPrice ? `${offer.currentPrice} ${offer.currency}` : 'N/A'}
                             {hasPriceDrop && <TrendingDown size={12} className="text-emerald-500 animate-pulse" />}
                           </span>
                         </td>
@@ -223,21 +223,8 @@ export default function PriceManager({ productId }: PriceManagerProps) {
                         </td>
                         <td className="py-3 px-4">
                           <div className="flex items-center justify-center gap-1.5">
-                            <a
-                              href={offer.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="p-1.5 text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 rounded-md transition-colors"
-                            >
-                              <ExternalLink size={14} />
-                            </a>
-                            <button
-                              type="button"
-                              onClick={() => handleDelete(offer._id)}
-                              className="p-1.5 text-zinc-400 hover:text-rose-500 hover:bg-rose-50 rounded-md transition-colors cursor-pointer"
-                            >
-                              <Trash2 size={14} />
-                            </button>
+                            <a href={offer.url} target="_blank" rel="noopener noreferrer" className="p-1.5 text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 rounded-md transition-colors"><ExternalLink size={14} /></a>
+                            <button type="button" onClick={() => handleDelete(offer._id)} className="p-1.5 text-zinc-400 hover:text-rose-500 hover:bg-rose-50 rounded-md transition-colors cursor-pointer"><Trash2 size={14} /></button>
                           </div>
                         </td>
                       </tr>
@@ -248,7 +235,6 @@ export default function PriceManager({ productId }: PriceManagerProps) {
             </div>
           )}
         </div>
-
       </div>
     </div>
   );

@@ -5,7 +5,7 @@ export interface LinkOffer {
   country: string;
   url: string;
   priceSelector: string;
-  price: number;       
+  currentPrice: number;       
   oldPrice: number;    
   currency: string;
 }

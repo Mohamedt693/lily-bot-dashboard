@@ -108,6 +108,25 @@ export function ProductProvider({ children }: { children: ReactNode }) {
     [API_URL, getHeaders, loadProducts],
   );
 
+  const getProductById = useCallback(
+    async (id: string): Promise<Product | null> => {
+      try {
+        setLoading(true);
+        const res = await fetch(`${API_URL}/api/dashboard/products/${id}`, {
+          headers: getHeaders(),
+        });
+        const result = await res.json();
+        return (result.success ? result.data : null) as Product;
+      } catch {
+        toast.error("Failed to fetch product details.");
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [API_URL, getHeaders]
+  );
+
   const deleteProduct = useCallback(
     async (id: string) => {
       try {
@@ -206,6 +225,7 @@ export function ProductProvider({ children }: { children: ReactNode }) {
         pagination,
         loadProducts,
         addProduct,
+        getProductById,
         updateProduct,
         deleteProduct,
         getOffersByProduct,
